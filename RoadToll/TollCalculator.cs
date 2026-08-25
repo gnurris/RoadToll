@@ -47,32 +47,52 @@ public class TollCalculator
     private bool IsTollFreeVehicle(Vehicle vehicle)
     {
         if (vehicle == null) return false;
-        String vehicleType = vehicle.GetVehicleType();
-        return vehicleType.Equals(TollFreeVehicles.Motorbike.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Tractor.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Emergency.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Diplomat.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Foreign.ToString()) ||
-               vehicleType.Equals(TollFreeVehicles.Military.ToString());
+        string vehicleType = vehicle.GetVehicleType();
+        // Return true if vehicleType matches any TollFreeVehicles
+        return Enum.TryParse<TollFreeVehicles>(vehicleType, ignoreCase: true, out _);
     }
+
+    private readonly struct TollWindow
+    {
+        public TimeOnly Start { get; }
+        public TimeOnly End { get; }
+        public int Fee { get; }
+
+        public TollWindow(TimeOnly start, TimeOnly end, int fee)
+        {
+            Start = start;
+            End = end;
+            Fee = fee;
+        }
+    }
+
+    private static readonly TollWindow[] TollWindows = new[]
+    {
+        new TollWindow(new TimeOnly(6, 0),  new TimeOnly(6, 29),  8),
+        new TollWindow(new TimeOnly(6, 30), new TimeOnly(6, 59),  13),
+        new TollWindow(new TimeOnly(7, 0),  new TimeOnly(7, 59),  18),
+        new TollWindow(new TimeOnly(8, 0),  new TimeOnly(8, 29),  13),
+        new TollWindow(new TimeOnly(8, 30), new TimeOnly(14, 59), 8),
+        new TollWindow(new TimeOnly(15, 0), new TimeOnly(15, 29), 13),
+        new TollWindow(new TimeOnly(15, 30),new TimeOnly(16, 59), 18),
+        new TollWindow(new TimeOnly(17, 0), new TimeOnly(17, 59), 13),
+        new TollWindow(new TimeOnly(18, 0), new TimeOnly(18, 29), 8)
+    };
 
     public int GetTollFee(DateTime date, Vehicle vehicle)
     {
         if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle)) return 0;
 
-        int hour = date.Hour;
-        int minute = date.Minute;
+        TimeOnly timeOfDay = TimeOnly.FromDateTime(date);
 
-        if (hour == 6 && minute >= 0 && minute <= 29) return 8;
-        else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
-        else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
-        else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-        else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 8;
-        else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
-        else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
-        else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
-        else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-        else return 0;
+        // Lookup fee by scanning configured windows (small fixed list => simple and readable).
+        foreach (var w in TollWindows)
+        {
+            if (timeOfDay >= w.Start && timeOfDay <= w.End)
+                return w.Fee;
+        }
+
+        return 0;
     }
 
     private Boolean IsTollFreeDate(DateTime date)
@@ -83,17 +103,17 @@ public class TollCalculator
 
         if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) return true;
 
-            if (month == 1 && day == 1 ||
-                month == 3 && (day == 28 || day == 29) ||
-                month == 4 && (day == 1 || day == 30) ||
-                month == 5 && (day == 1 || day == 8 || day == 9) ||
-                month == 6 && (day == 5 || day == 6 || day == 21) ||
-                month == 7 ||
-                month == 11 && day == 1 ||
-                month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-            {
-                return true;
-            }
+        if (month == 1 && day == 1 ||
+            month == 3 && (day == 28 || day == 29) ||
+            month == 4 && (day == 1 || day == 30) ||
+            month == 5 && (day == 1 || day == 8 || day == 9) ||
+            month == 6 && (day == 5 || day == 6 || day == 21) ||
+            month == 7 ||
+            month == 11 && day == 1 ||
+            month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
+        {
+            return true;
+        }
         return false;
     }
 
