@@ -15,6 +15,10 @@ public class TollCalculator
 
     public int GetTollFee(Vehicle vehicle, DateTime[] dates)
     {
+        if (dates.Length == 0)
+        {
+            return 0;
+        }
         DateTime intervalStart = dates[0];
         int totalFee = 0;
         foreach (DateTime date in dates)
@@ -79,8 +83,6 @@ public class TollCalculator
 
         if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) return true;
 
-        if (year == 2013)
-        {
             if (month == 1 && day == 1 ||
                 month == 3 && (day == 28 || day == 29) ||
                 month == 4 && (day == 1 || day == 30) ||
@@ -92,7 +94,6 @@ public class TollCalculator
             {
                 return true;
             }
-        }
         return false;
     }
 

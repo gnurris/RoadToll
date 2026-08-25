@@ -1,0 +1,2 @@
+- Removed year = 2013 restriction in TollCalculator
+- Check if dates are non-empty before trying to access first element
