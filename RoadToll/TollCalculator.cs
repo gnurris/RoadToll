@@ -97,26 +97,35 @@ public class TollCalculator
         new TollWindow(new TimeOnly(18, 0), new TimeOnly(18, 29), 8)
     };
 
-    private Boolean IsTollFreeDate(DateTime date)
+    private static readonly int[] TollFreeMonths = { 7 }; // July
+
+    private static readonly HashSet<(int Month, int Day)> TollFreeDates =
+    [
+        (1, 1),   // Nyårsdagen
+        (4, 30),  // Valborgsmässoafton
+        (5, 1),   // Första maj
+        (6, 5),   // Dagen före nationaldagen
+        (6, 6),   // Nationaldagen
+        (12, 24), // Julafton
+        (12, 25), // Juldagen
+        (12, 26), // Annandag jul
+        (12, 31)  // Nyårsafton
+    ];
+
+    private bool IsTollFreeDate(DateTime date)
     {
-        int year = date.Year;
-        int month = date.Month;
-        int day = date.Day;
+        if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            return true;
 
-        if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) return true;
+        if (TollFreeMonths.Contains(date.Month))
+            return true;
 
-            if (month == 1 && day == 1 ||
-                month == 3 && (day == 28 || day == 29) ||
-                month == 4 && (day == 1 || day == 30) ||
-                month == 5 && (day == 1 || day == 8 || day == 9) ||
-                month == 6 && (day == 5 || day == 6 || day == 21) ||
-                month == 7 ||
-                month == 11 && day == 1 ||
-                month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-            {
-                return true;
-            }
-        return false;
+        return IsSpecificTollFreeDate(date);
+    }
+
+    private bool IsSpecificTollFreeDate(DateTime date)
+    {
+        return TollFreeDates.Contains((date.Month, date.Day));
     }
 
     private enum TollFreeVehicles
