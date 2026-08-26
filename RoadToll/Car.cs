@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TollFeeCalculator
 {
     public class Car : Vehicle
     {
+        // Map Car to the domain's CivillianCar vehicle type (the only non-toll-free type).
+        public VehicleType Type => VehicleType.CivilianCar;
+
         public String GetVehicleType()
         {
-            return "Car";
+            return Type.ToString();
         }
     }
 }

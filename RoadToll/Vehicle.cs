@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TollFeeCalculator
 {
     public interface Vehicle
     {
+        VehicleType Type { get; }
         String GetVehicleType();
+        public bool IsTollFree()
+        {
+            return Type != VehicleType.CivilianCar;
+        }
     }
 }

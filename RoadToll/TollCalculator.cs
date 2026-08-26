@@ -64,10 +64,9 @@ public class TollCalculator
 
     private bool IsTollFreeVehicle(Vehicle vehicle)
     {
+        // Use the new Vehicle extension method to determine toll-free status.
         if (vehicle == null) return false;
-        string vehicleType = vehicle.GetVehicleType();
-        // Return true if vehicleType matches any TollFreeVehicles
-        return Enum.TryParse<TollFreeVehicles>(vehicleType, ignoreCase: true, out _);
+        return vehicle.IsTollFree();
     }
 
     private readonly struct TollWindow
@@ -126,15 +125,5 @@ public class TollCalculator
     private bool IsSpecificTollFreeDate(DateTime date)
     {
         return TollFreeDates.Contains((date.Month, date.Day));
-    }
-
-    private enum TollFreeVehicles
-    {
-        Motorbike = 0,
-        Tractor = 1,
-        Emergency = 2,
-        Diplomat = 3,
-        Foreign = 4,
-        Military = 5
     }
 }
