@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using TollFeeCalculator;
 
 public class TollCalculator
 {
-
     /**
      * Calculate the total toll fee for one day
      *
@@ -15,33 +15,51 @@ public class TollCalculator
 
     public int GetTollFee(Vehicle vehicle, DateTime[] dates)
     {
-        if (dates.Length == 0)
+        if (dates == null || dates.Length == 0 || IsTollFreeVehicle(vehicle))
         {
             return 0;
         }
-        DateTime intervalStart = dates[0];
-        int totalFee = 0;
-        foreach (DateTime date in dates)
+
+        // Local helper that uses TollWindows directly
+        int FeeFor(DateTime dt)
         {
-            int nextFee = GetTollFee(date, vehicle);
-            int tempFee = GetTollFee(intervalStart, vehicle);
-
-            long diffInMillies = date.Millisecond - intervalStart.Millisecond;
-            long minutes = diffInMillies/1000/60;
-
-            if (minutes <= 60)
+            if (IsTollFreeDate(dt)) return 0;
+            TimeOnly t = TimeOnly.FromDateTime(dt);
+            foreach (var w in TollWindows)
             {
-                if (totalFee > 0) totalFee -= tempFee;
-                if (nextFee >= tempFee) tempFee = nextFee;
-                totalFee += tempFee;
+                if (t >= w.Start && t <= w.End) return w.Fee;
+            }
+            return 0;
+        }
+
+        Array.Sort(dates); // ensure chronological order
+        int totalFee = 0;
+
+        DateTime intervalStart = dates[0];
+        int intervalMaxFee = FeeFor(intervalStart);
+
+        for (int i = 1; i < dates.Length; i++)
+        {
+            DateTime date = dates[i];
+            int fee = FeeFor(date);
+            var diff = date - intervalStart;
+
+            if (diff.TotalMinutes <= 60)
+            {
+                if (fee > intervalMaxFee)
+                    intervalMaxFee = fee;
             }
             else
             {
-                totalFee += nextFee;
+                totalFee += intervalMaxFee;
+                intervalStart = date;
+                intervalMaxFee = fee;
             }
         }
-        if (totalFee > 60) totalFee = 60;
-        return totalFee;
+
+
+        totalFee += intervalMaxFee;
+        return totalFee > 60 ? 60 : totalFee;
     }
 
     private bool IsTollFreeVehicle(Vehicle vehicle)
@@ -79,22 +97,6 @@ public class TollCalculator
         new TollWindow(new TimeOnly(18, 0), new TimeOnly(18, 29), 8)
     };
 
-    public int GetTollFee(DateTime date, Vehicle vehicle)
-    {
-        if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle)) return 0;
-
-        TimeOnly timeOfDay = TimeOnly.FromDateTime(date);
-
-        // Lookup fee by scanning configured windows (small fixed list => simple and readable).
-        foreach (var w in TollWindows)
-        {
-            if (timeOfDay >= w.Start && timeOfDay <= w.End)
-                return w.Fee;
-        }
-
-        return 0;
-    }
-
     private Boolean IsTollFreeDate(DateTime date)
     {
         int year = date.Year;
@@ -103,17 +105,17 @@ public class TollCalculator
 
         if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) return true;
 
-        if (month == 1 && day == 1 ||
-            month == 3 && (day == 28 || day == 29) ||
-            month == 4 && (day == 1 || day == 30) ||
-            month == 5 && (day == 1 || day == 8 || day == 9) ||
-            month == 6 && (day == 5 || day == 6 || day == 21) ||
-            month == 7 ||
-            month == 11 && day == 1 ||
-            month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-        {
-            return true;
-        }
+            if (month == 1 && day == 1 ||
+                month == 3 && (day == 28 || day == 29) ||
+                month == 4 && (day == 1 || day == 30) ||
+                month == 5 && (day == 1 || day == 8 || day == 9) ||
+                month == 6 && (day == 5 || day == 6 || day == 21) ||
+                month == 7 ||
+                month == 11 && day == 1 ||
+                month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
+            {
+                return true;
+            }
         return false;
     }
 
