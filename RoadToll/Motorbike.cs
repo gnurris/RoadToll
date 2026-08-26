@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TollFeeCalculator
+﻿namespace TollFeeCalculator
 {
     public class Motorbike : Vehicle
     {
