@@ -70,6 +70,16 @@
             AssertFee(0, new DateTime(TestYear, TestMonth, TestDay, 9, 0, 0), mb);
             AssertFee(0, new DateTime(TestYear, TestMonth, TestDay, 15, 30, 0), mb);
             AssertFee(0, new DateTime(TestYear, TestMonth, TestDay, 18, 30, 0), mb);
+
+            // New: Ambulance (Emergency) should be toll-free
+            Ambulance amb = new Ambulance();
+            AssertFee(0, new DateTime(TestYear, TestMonth, TestDay, 7, 0, 0), amb);
+            AssertFee(0, new DateTime(TestYear, TestMonth, TestDay, 8, 0, 0), amb);
+
+            // New: Tank (Military) should be toll-free
+            Tank tank = new Tank();
+            AssertFee(0, new DateTime(TestYear, TestMonth, TestDay, 7, 0, 0), tank);
+            AssertFee(0, new DateTime(TestYear, TestMonth, TestDay, 15, 30, 0), tank);
         }
 
         private static void TestSixtyMinuteRule()
