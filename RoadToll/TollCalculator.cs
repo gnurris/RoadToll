@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
-using TollFeeCalculator;
+﻿using TollFeeCalculator;
 
 public class TollCalculator
 {
@@ -23,7 +20,7 @@ public class TollCalculator
         // Local helper that uses TollWindows directly
         int FeeFor(DateTime dt)
         {
-            if (IsTollFreeDate(dt)) return 0;
+            if (HolidayHandler.IsTollFreeDate(dt)) return 0;
             TimeOnly t = TimeOnly.FromDateTime(dt);
             foreach (var w in TollWindows)
             {
@@ -95,35 +92,4 @@ public class TollCalculator
         new TollWindow(new TimeOnly(17, 0), new TimeOnly(17, 59), 13),
         new TollWindow(new TimeOnly(18, 0), new TimeOnly(18, 29), 8)
     };
-
-    private static readonly int[] TollFreeMonths = { 7 }; // July
-
-    private static readonly HashSet<(int Month, int Day)> TollFreeDates =
-    [
-        (1, 1),   // Nyårsdagen
-        (4, 30),  // Valborgsmässoafton
-        (5, 1),   // Första maj
-        (6, 5),   // Dagen före nationaldagen
-        (6, 6),   // Nationaldagen
-        (12, 24), // Julafton
-        (12, 25), // Juldagen
-        (12, 26), // Annandag jul
-        (12, 31)  // Nyårsafton
-    ];
-
-    private bool IsTollFreeDate(DateTime date)
-    {
-        if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
-            return true;
-
-        if (TollFreeMonths.Contains(date.Month))
-            return true;
-
-        return IsSpecificTollFreeDate(date);
-    }
-
-    private bool IsSpecificTollFreeDate(DateTime date)
-    {
-        return TollFreeDates.Contains((date.Month, date.Day));
-    }
 }
