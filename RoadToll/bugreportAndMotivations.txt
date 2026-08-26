@@ -1,0 +1,18 @@
+# Bugs found
+- Removed year = 2013 restriction in TollCalculator and subsequent hardcoded dates for that year
+- Check if dates are non-empty before trying to access first element
+- diffInMillies only calculates the difference in milliseconds. Not the difference of the entire time in milliseconds. 
+
+# Motivations
+- TollWindow struct was introduced to more easily map a time-window with a toll fee. This allows for easy addition or removal of tollWindows. Also easier for readability
+- I felt it necessary to remove the remove the overloaded GetTollFee function. Having a restriction on the input paramterer to be an array of dates is totally fine in my opinion, and in that case we dont need to have overlaoded function for such a simple calculation
+- Introduction of TestRoadToll is self explanatory as it was used to test the functionality before and after the changes. 
+- Put generic holidays in its own container. Easier for readability and scalability as the logic is not contained inside of if-statement inside of a singular function. For further development it might be good to use 3rd party APIs or services for specific years (Påsk, midsommar). 
+- Removing the tollFree vehicles enum and attaching this logic to the actual Vehicle class just made more sense to me. This is easier to call as each vehicle can call its own function to check if it is tollFree or not.
+- Move out toll-free date handling from TollCalculator to its own class HolidayHandler, this in order to keep single-responsibility principle. 
+
+# Known limitations & assumptions
+- Holiday formulas: Some holidays are computed with a more complex algorithm than "x or y days before/after holiday z for example.". Easter is apparently pretty complex to calculate, and thus i have taken a hardcoded day within that range instead: 
+
+- Time zone and DateTime.Kind
+  - The implementation accepts `DateTime` and uses local calendar/day semantics. Does not support or explicit time-zone normalization.
